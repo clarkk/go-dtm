@@ -8,11 +8,11 @@ import (
 	"unicode"
 	"github.com/clarkk/go-api/errin"
 	"github.com/clarkk/go-dbd"
+	"github.com/clarkk/go-dtm/types"
 	"github.com/clarkk/go-fmt/sanitize"
 	"github.com/clarkk/go-util/hash_pass"
 	"github.com/clarkk/go-util/rdb"
 	"github.com/clarkk/go-util/secure_pass"
-	"github.com/clarkk/blumac_app/pkg/data_model/types"
 )
 
 var (
