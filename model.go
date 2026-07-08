@@ -60,6 +60,14 @@ func (m *Model_table) Children(a *api.Request) bool {
 	return true
 }
 
+func (m *model_base) Public_access(a *api.Request) bool {
+	if !m.Public() || !m.env_access() {
+		a.Error(http.StatusForbidden, nil)
+		return false
+	}
+	return true
+}
+
 func (m *Model_table) Update_limit_max(limit *api.Limit) error {
 	if limit == nil {
 		return NewError(http.StatusBadRequest, m.Env_lang_error("REQUEST_LIMIT", nil))
@@ -111,13 +119,6 @@ func (m *model_base) Table_extension() string {
 	return m.Resource()+"_"+m.table_extension
 }
 
-func (m *model_base) Public_access(a *api.Request) bool {
-	if !m.env_access(a) {
-		return false
-	}
-	return true
-}
-
 func (m *model_base) Env_lang_field(field string) string {
 	return m.env.Lang_string(m.names[field], nil)
 }
@@ -126,23 +127,16 @@ func (m *model_base) Env_lang_error(key string, replace map[string]any) error {
 	return m.env.Lang_error(key, replace)
 }
 
-func (m *model_base) env_access(a *api.Request) bool {
+func (m *model_base) env_access() bool {
 	env_access := m.Env_access()
 	if env_access == nil {
-		a.Error(http.StatusForbidden, nil)
 		return false
 	}
 	env_data := m.env.Data()
 	for _, key := range env_access {
 		if val, ok := env_data[key].(uint64); !ok || val == 0 {
-			a.Error(http.StatusForbidden, nil)
 			return false
 		}
 	}
 	return true
-}
-
-func (m *model_base) env_user_auth(user_auth string) bool {
-	val, ok := m.env.Data()["user_auth"].(string)
-	return ok && user_auth == val
 }
