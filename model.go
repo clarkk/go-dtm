@@ -60,14 +60,6 @@ func (m *Model_table) Children(a *api.Request) bool {
 	return true
 }
 
-func (m *model_base) Public_access(a *api.Request) bool {
-	if !m.Public() || !m.env_access() {
-		a.Error(http.StatusForbidden, nil)
-		return false
-	}
-	return true
-}
-
 func (m *Model_table) Update_limit_max(limit *api.Limit) error {
 	if limit == nil {
 		return NewError(http.StatusBadRequest, m.Env_lang_error("REQUEST_LIMIT", nil))
@@ -115,7 +107,18 @@ func (m *model_base) Base() *model_base {
 	return m
 }
 
+func (m *model_base) Public_access(a *api.Request) bool {
+	if !m.Public() || !m.env_access() {
+		a.Error(http.StatusForbidden, nil)
+		return false
+	}
+	return true
+}
+
 func (m *model_base) Public_resource() string {
+	if m.table_extension == "" {
+		return m.Resource()
+	}
 	return m.Resource()+"_"+m.table_extension
 }
 
