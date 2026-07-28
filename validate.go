@@ -272,9 +272,8 @@ func (m *Validate) Error_int_range(field string, i *int, min, max int64) *errin.
 	return nil
 }
 
-func (m *Validate) Error_uint64_range(field string, i *uint64, min, max int64) *errin.Lang {
-	i64 := int64(*i)
-	if i64 < min || i64 > max {
+func (m *Validate) Error_uint64_range(field string, i *uint64, min, max uint64) *errin.Lang {
+	if *i < min || *i > max {
 		return &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
 			"field":	m.Env_lang_field(field),
 			"min":		min,
