@@ -115,7 +115,7 @@ func (m *model_base) Base() *model_base {
 	return m
 }
 
-func (m *model_base) Table_extension() string {
+func (m *model_base) Public_resource() string {
 	return m.Resource()+"_"+m.table_extension
 }
 
