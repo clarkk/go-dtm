@@ -10,6 +10,7 @@ type Build_model_table struct {
 	Tx 				*dbd.Tx
 	Env 			*env.Environment
 	Table_extension	string
+	Endpoint		string
 	Names 			Names
 	Limit_max		uint8
 	Children		bool
@@ -24,6 +25,7 @@ func (b Build_model_table) Build() Model_table {
 			},
 			schema:				b.Schema,
 			table_extension:	b.Table_extension,
+			endpoint:			b.Endpoint,
 			names:				b.Names,
 		},
 		limit_max:				b.Limit_max,

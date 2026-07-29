@@ -27,6 +27,7 @@ type (
 		Env_context
 		schema
 		table_extension string
+		endpoint		string
 		names 			Names
 	}
 	
@@ -121,6 +122,13 @@ func (m *model_base) Source_resource() string {
 		table += "_"+m.table_extension
 	}
 	return table
+}
+
+func (m *model_base) Endpoint() string {
+	if m.endpoint != "" {
+		return m.endpoint
+	}
+	return m.Source_resource()
 }
 
 func (m *model_base) Env_lang_field(field string) string {
