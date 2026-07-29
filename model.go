@@ -116,7 +116,7 @@ func (m *model_base) Public_access(a *api.Request) bool {
 	return true
 }
 
-func (m *model_base) Resource_extension()() string {
+func (m *model_base) Resource_extension() string {
 	var table = m.Resource()
 	if m.table_extension != "" {
 		table += "_"+m.table_extension
@@ -128,7 +128,7 @@ func (m *model_base) Endpoint() string {
 	if m.endpoint != "" {
 		return m.endpoint
 	}
-	return m.Resource_extension()()
+	return m.Resource_extension()
 }
 
 func (m *model_base) Env_lang_field(field string) string {
