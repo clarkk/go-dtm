@@ -26,6 +26,7 @@ type (
 	model_base struct {
 		Env_context
 		schema
+		table_resource	string
 		table_extension string
 		names 			Names
 	}
@@ -115,11 +116,16 @@ func (m *model_base) Public_access(a *api.Request) bool {
 	return true
 }
 
-func (m *model_base) Public_resource() string {
-	if m.table_extension == "" {
-		return m.Resource()
+func (m *model_base) Public_resource() (table string){
+	if m.table_resource != "" {
+		table = m.table_resource
+	} else {
+		table = m.Resource()
 	}
-	return m.Resource()+"_"+m.table_extension
+	if m.table_extension != "" {
+		table += "_"+m.table_extension
+	}
+	return
 }
 
 func (m *model_base) Env_lang_field(field string) string {

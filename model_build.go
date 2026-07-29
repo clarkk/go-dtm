@@ -9,6 +9,7 @@ type Build_model_table struct {
 	Schema			schema
 	Tx 				*dbd.Tx
 	Env 			*env.Environment
+	Table_resource	string
 	Table_extension	string
 	Names 			Names
 	Limit_max		uint8
@@ -23,6 +24,7 @@ func (b Build_model_table) Build() Model_table {
 				env:		b.Env,
 			},
 			schema:				b.Schema,
+			table_resource:		b.Table_resource,
 			table_extension:	b.Table_extension,
 			names:				b.Names,
 		},
