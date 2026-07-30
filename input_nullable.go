@@ -2,6 +2,7 @@ package dtm
 
 import (
 	"bytes"
+	"reflect"
 	"encoding/json/v2"
 )
 
@@ -39,4 +40,8 @@ func (n Nullable[T]) Assign(dest *T) bool {
 	}
 	*dest = **n.Value
 	return true
+}
+
+func (Nullable[T]) JSON_type() reflect.Type {
+	return reflect.TypeFor[T]()
 }
