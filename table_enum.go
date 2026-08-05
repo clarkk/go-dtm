@@ -36,6 +36,9 @@ func (m Enums) Enum_unsets(field string) Enum_unsets {
 	if !ok {
 		return nil
 	}
+	if enum.unsets == nil {
+        return nil
+    }
 	copy := make(Enum_unsets, len(enum.unsets))
 	for field, rule := range enum.unsets {
 		copy[field] = Enum_unset{
