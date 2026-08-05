@@ -11,8 +11,8 @@ type (
 	
 	Enum_unsets map[string]Enum_unset
 	Enum_unset struct {
-		in 			bool
-		values 		[]string
+		In 			bool
+		Values 		[]string
 	}
 )
 
@@ -20,13 +20,6 @@ func NewEnum(values []string, unsets Enum_unsets) Enum {
 	return Enum{
 		values: values,
 		unsets: unsets,
-	}
-}
-
-func NewEnum_unset(in bool, values []string) Enum_unset {
-	return Enum_unset{
-		in:		in,
-		values:	values,
 	}
 }
 
@@ -45,6 +38,20 @@ func (e Enum) Value(i int) string {
 func (e Enum) Values() []string {
 	return slices.Clone(e.values)
 }
+
+/*func (e Enum) Unsets() Enum_unsets {
+	if e.unsets == nil {
+		return nil
+	}
+	copy := make(Enum_unsets, len(e.unsets))
+	for field, rule := range e.unsets {
+		copy[field] = Enum_unset{
+			In:		rule.In,
+			Values:	slices.Clone(rule.Values),
+		}
+	}
+	return copy
+}*/
 
 func (e Enum) Index(value string) int {
 	return slices.Index(e.values, value)
@@ -68,8 +75,8 @@ func (e Enum) Unset(enum_value, field string) bool {
 		panic("dtm: unset rule not found for field: "+field)
 	}
 	
-	contains := slices.Contains(rule.values, enum_value)
-	if rule.in {
+	contains := slices.Contains(rule.Values, enum_value)
+	if rule.In {
 		return contains
 	}
 	return !contains
