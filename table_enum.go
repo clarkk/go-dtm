@@ -31,6 +31,21 @@ func (m Enums) Enum_values(field string) []string {
 	return enum.Values()
 }
 
+func (m Enums) Enum_unsets(field string) Enum_unsets {
+	enum, ok := m[field]
+	if !ok {
+		return nil
+	}
+	copy := make(Enum_unsets, len(enum.unsets))
+	for field, rule := range enum.unsets {
+		copy[field] = Enum_unset{
+			In:		rule.In,
+			Values:	slices.Clone(rule.Values),
+		}
+	}
+	return copy
+}
+
 func (e Enum) Value(i int) string {
 	return e.values[i]
 }
@@ -38,20 +53,6 @@ func (e Enum) Value(i int) string {
 func (e Enum) Values() []string {
 	return slices.Clone(e.values)
 }
-
-/*func (e Enum) Unsets() Enum_unsets {
-	if e.unsets == nil {
-		return nil
-	}
-	copy := make(Enum_unsets, len(e.unsets))
-	for field, rule := range e.unsets {
-		copy[field] = Enum_unset{
-			In:		rule.In,
-			Values:	slices.Clone(rule.Values),
-		}
-	}
-	return copy
-}*/
 
 func (e Enum) Index(value string) int {
 	return slices.Index(e.values, value)
