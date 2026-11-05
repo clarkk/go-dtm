@@ -353,7 +353,7 @@ func (m *Validate) Error_table_email(table, field string, s *string) (*errin.Lan
 					"domain":	domain,
 				}}, nil
 			}
-			rdb.Set(ctx, key, []byte("1"), 60*60*24*30)
+			rdb.Set(ctx, key, "1", 60*60*24*30)
 		} else {
 			return nil, err
 		}
