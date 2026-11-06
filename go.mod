@@ -3,10 +3,10 @@ module github.com/clarkk/go-dtm
 go 1.27.2
 
 require (
-	github.com/clarkk/go-api v0.0.0-20261105233722-8edc4e31ef33
+	github.com/clarkk/go-api v0.0.0-20261106000111-9d9f5b1723aa
 	github.com/clarkk/go-dbd v0.0.0-20261014121119-d23088b4e03d
-	github.com/clarkk/go-fmt v0.0.0-20261019150016-4ed5c506cb70
-	github.com/clarkk/go-util v0.0.0-20261105233337-afedc2accbea
+	github.com/clarkk/go-fmt v0.0.0-20261105235200-68299c19975b
+	github.com/clarkk/go-util v0.0.0-20261105234859-c1634ad714d4
 )
 
 require (
