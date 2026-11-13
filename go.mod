@@ -3,10 +3,10 @@ module github.com/clarkk/go-dtm
 go 1.27.2
 
 require (
-	github.com/clarkk/go-api v0.0.0-20261106000111-9d9f5b1723aa
+	github.com/clarkk/go-api v0.0.0-20261113095205-5a6c1bebe732
 	github.com/clarkk/go-dbd v0.0.0-20261014121119-d23088b4e03d
-	github.com/clarkk/go-fmt v0.0.0-20261105235200-68299c19975b
-	github.com/clarkk/go-util v0.0.0-20261105234859-c1634ad714d4
+	github.com/clarkk/go-fmt v0.0.0-20261106002426-d33ba6c521a9
+	github.com/clarkk/go-util v0.0.0-20261113095104-e8e5bf2115ae
 )
 
 require (
@@ -16,7 +16,7 @@ require (
 	github.com/go-sql-driver/mysql v1.10.1 // indirect
 	github.com/redis/go-redis/v9 v9.23.0 // indirect
 	go.uber.org/atomic v1.12.0 // indirect
-	golang.org/x/crypto v0.58.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
+	golang.org/x/crypto v0.59.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 )
