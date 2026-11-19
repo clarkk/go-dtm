@@ -17,6 +17,7 @@ import (
 
 var (
 	re_alphanum 		= regexp.MustCompile(`(?i)^[a-z\d]+$`)
+	re_alphanum_hyphen 	= regexp.MustCompile(`(?i)^[a-z\d-]+$`)
 	re_alphanum_chars 	= regexp.MustCompile(`(?i)^[a-z\d_.-]+$`)
 	
 	re_email_user 		= regexp.MustCompile(`(?i)^[a-z\d+_.-]+$`)
@@ -123,6 +124,23 @@ func (m *Validate) Error_code_letters(field string, s *string) *errin.Lang {
 	}
 	if err = m.Error_maxlength(field, s); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (m *Validate) Error_code_hyphen(field string, s *string) *errin.Lang {
+	m.Field_code(s)
+	if err := m.Error_empty(field, s); err != nil {
+		return err
+	}
+	if err := m.Error_maxlength(field, s); err != nil {
+		return err
+	}
+	if !re_alphanum_hyphen.MatchString(*s) {
+		return &errin.Lang{"FIELD_ALPHA_NUM_CHARS", errin.Rep{
+			"field":	m.Env_lang_field(field),
+			"chars":	strings.Join([]string{"-"}, ""),
+		}}
 	}
 	return nil
 }
