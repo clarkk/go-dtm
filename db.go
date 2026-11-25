@@ -229,11 +229,11 @@ func (s DB_query) get_id_exists(where *sqlc.Where_clause, lock_for_update bool) 
 	q := s.Select_query([]string{"id"}, nil).
 		Where(where).
 		Limit(0, 1)
-
+	
 	if lock_for_update {
 		q.Lock_for_update()
 	}
-
+	
 	empty, err := s.tx.Query_row(q, []any{&id})
 	if empty {
 		err = nil
