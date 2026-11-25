@@ -58,7 +58,11 @@ func Factor_int64_percent(a, b, factor int64) (int64, error){
 
 //	Convert from one factor to another and round to nearest
 func Factor_int64_convert(i, factor_from, factor_to int64) int64 {
-	return (i * factor_to + factor_from / 2) / factor_from
+	v := i * factor_to
+	if v < 0 {
+		return (v - factor_from / 2) / factor_from
+	}
+	return (v + factor_from / 2) / factor_from
 }
 
 func multiplication_overflow(a, b int64) (int64, error){

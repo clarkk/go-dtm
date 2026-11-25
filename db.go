@@ -61,8 +61,8 @@ func (s DB_query) Exec(q sqlc.SQL) (sql.Result, error){
 	return s.tx.Exec(q)
 }
 
-func (s DB_query) Query_row(q sqlc.SQL, dest []any) (bool, error){
-	return s.tx.Query_row(q, dest)
+func (s DB_query) Query_row(q sqlc.SQL, scan []any) (empty bool, err error){
+	return s.tx.Query_row(q, scan)
 }
 
 func (s DB_query) Fetch(q sqlc.SQL, scan func(rows *sql.Rows) error) error {
@@ -100,13 +100,13 @@ func (s DB_query) Insert_extension(value any, fields sqlc.Map) error {
 		Fields(fields))
 }
 
-func (s DB_query) Update(id uint64, fields sqlc.Map, where *sqlc.Where_clause) error {
+func (s DB_query) Update_id(id uint64, fields sqlc.Map, where *sqlc.Where_clause) error {
 	return s.tx.Update(
 		sqlc.Update_id(s.Resource(), id).Fields(fields).
 		Where(where))
 }
 
-func (s DB_query) Update_where(fields sqlc.Map, where *sqlc.Where_clause) error {
+func (s DB_query) Update(fields sqlc.Map, where *sqlc.Where_clause) error {
 	return s.tx.Update(
 		sqlc.Update(s.Resource()).Fields(fields).
 		Where(where))
@@ -119,13 +119,13 @@ func (s DB_query) Update_extension(value any, fields sqlc.Map, where *sqlc.Where
 		Where(where.Eq(key, value)))
 }
 
-func (s DB_query) Delete(id uint64, where *sqlc.Where_clause) (bool, error){
+func (s DB_query) Delete_id(id uint64, where *sqlc.Where_clause) (bool, error){
 	return s.tx.Delete(
 		sqlc.Delete_id(s.Resource(), id).
 		Where(where))
 }
 
-func (s DB_query) Delete_where(where *sqlc.Where_clause) (bool, error){
+func (s DB_query) Delete(where *sqlc.Where_clause) (empty bool, err error){
 	return s.tx.Delete(
 		sqlc.Delete(s.Resource()).
 		Where(where))
