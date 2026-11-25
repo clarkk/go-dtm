@@ -267,6 +267,7 @@ func (s DB_query) count(where *sqlc.Where_clause) (count uint32, err error){
 }
 
 func (s DB_query) get_extension() (table string, id string){
-	table := s.Resource()
-	return table+"_"+s.table_extension, table+"_id"
+	table	= s.Resource()
+	id		= table+"_id"
+	return
 }
