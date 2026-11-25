@@ -119,7 +119,7 @@ func (s DB_query) Update_extension(value any, fields sqlc.Map, where *sqlc.Where
 		Where(where.Eq(key, value)))
 }
 
-func (s DB_query) Delete_id(id uint64, where *sqlc.Where_clause) (bool, error){
+func (s DB_query) Delete_id(id uint64, where *sqlc.Where_clause) (empty bool, err error){
 	return s.tx.Delete(
 		sqlc.Delete_id(s.Resource(), id).
 		Where(where))
@@ -137,23 +137,23 @@ func (s DB_query) Match_etag(id uint64, etag_header uint32, where *sqlc.Where_cl
 	
 	var etag uint32
 	empty, err := s.tx.Query_row(q, []any{&etag})
-	if empty {
-		return false, false, nil
+	if empty || err != nil {
+		return
 	}
-	if err != nil {
-		return false, false, err
-	}
-	return true, etag_header == etag, nil
+	
+	found = true
+	match = etag_header == etag
+	return
 }
 
-func (s DB_query) Constraints(wheres []*sqlc.Where_clause, joins Joins) (bool, error){
+func (s DB_query) Constraints(wheres []*sqlc.Where_clause, joins Joins) (exists bool, err error){
 	for _, where := range wheres {
-		used, err := s.Exists(where, joins)
-		if used || err != nil {
-			return used, err
+		exists, err = s.Exists(where, joins)
+		if exists || err != nil {
+			return
 		}
 	}
-	return false, nil
+	return
 }
 
 func (s DB_query) Exists_id(id uint64, where *sqlc.Where_clause, joins Joins) (bool, error){
@@ -266,8 +266,8 @@ func (s DB_query) count(where *sqlc.Where_clause) (count uint32, err error){
 	return
 }
 
-func (s DB_query) get_extension() (table string, id string){
+func (s DB_query) get_extension() (table string, key string){
 	table	= s.Resource()
-	id		= table+"_id"
+	key		= table+"_id"
 	return
 }
