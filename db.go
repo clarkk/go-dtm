@@ -131,7 +131,7 @@ func (s DB_query) Delete(where *sqlc.Where_clause) (empty bool, err error){
 		Where(where))
 }
 
-func (s DB_query) Match_etag(id uint64, etag_header uint32, where *sqlc.Where_clause) (bool, bool, error){
+func (s DB_query) Match_etag(id uint64, etag_header uint32, where *sqlc.Where_clause) (found bool, match bool, err error){
 	q := s.Select_query_id(id, []string{"etag"}, nil).
 		Where(where)
 	
@@ -240,23 +240,7 @@ func (s DB_query) Get_ids(where *sqlc.Where_clause, read_lock bool) ([]uint64, e
 	return entries, err
 }
 
-func (s DB_query) Has_entries(where *sqlc.Where_clause, left_join Joins) (bool, error){
-	q := s.Select_query([]string{"id"}, left_join).
-		Where(where).
-		Limit(0, 1)
-	
-	var id uint64
-	empty, err := s.tx.Query_row(q, []any{&id})
-	if empty {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func (s DB_query) existence(q *sqlc.Select_query, where *sqlc.Where_clause) (bool, error){
+func (s DB_query) existence(q *sqlc.Select_query, where *sqlc.Where_clause) (exist bool, err error){
 	q.Select([]string{"id"}).
 		Where(where).
 		Limit(0, 1)
