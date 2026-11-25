@@ -9,7 +9,7 @@ import (
 type DB_query struct {
 	Env_context
 	schema_base
-	table_extension string
+	table_extension		string
 }
 
 func Int64_ptr(v *int64) int64 {
@@ -27,7 +27,7 @@ func (s DB_query) Select_query_id(id uint64, fields []string, joins Joins) *sqlc
 	return q
 }
 
-func (s DB_query) Select_query_id_raw(id uint64, fields []string, joins Raw_joins) *sqlc.Select_query {
+func (s DB_query) Select_query_id_explicit(id uint64, fields []string, joins Explicit_joins) *sqlc.Select_query {
 	q := sqlc.Select_id(s.Resource(), id).
 		Select(fields)
 	joins.apply(q)
@@ -38,8 +38,8 @@ func (s DB_query) Select_query(fields []string, joins Joins) *sqlc.Select_query 
 	return s.Select_query_table(s.Resource(), fields, joins)
 }
 
-func (s DB_query) Select_query_raw(fields []string, joins Raw_joins) *sqlc.Select_query {
-	return s.Select_query_table_raw(s.Resource(), fields, joins)
+func (s DB_query) Select_query_explicit(fields []string, joins Explicit_joins) *sqlc.Select_query {
+	return s.Select_query_table_explicit(s.Resource(), fields, joins)
 }
 
 func (s DB_query) Select_query_table(table string, fields []string, joins Joins) *sqlc.Select_query {
@@ -50,7 +50,7 @@ func (s DB_query) Select_query_table(table string, fields []string, joins Joins)
 	return q
 }
 
-func (s DB_query) Select_query_table_raw(table string, fields []string, joins Raw_joins) *sqlc.Select_query {
+func (s DB_query) Select_query_table_explicit(table string, fields []string, joins Explicit_joins) *sqlc.Select_query {
 	q := sqlc.Select(table).
 		Select(fields)
 	joins.apply(q)

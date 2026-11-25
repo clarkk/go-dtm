@@ -15,16 +15,16 @@ type (
 		Joins 				Joins
 	}
 	
-	Raw_query struct {
+	Explicit_query struct {
 		Select 				[]string
 		Select_jsons		[]Select_json
-		Joins 				Raw_joins
+		Joins 				Explicit_joins
 	}
 	
 	Select_json struct {
 		Table				string
 		Select_field		string
-		Query				Raw_query
+		Query				Explicit_query
 		Skip				func() bool
 	}
 	
@@ -42,8 +42,8 @@ type (
 		Fixed_value			any
 	}
 	
-	Raw_joins []Raw_join
-	Raw_join struct {
+	Explicit_joins []Explicit_join
+	Explicit_join struct {
 		Join_multi
 		Alias				string
 	}
@@ -77,7 +77,7 @@ func (j Joins) apply(q *sqlc.Select_query){
 	}
 }
 
-func (j Raw_joins) apply(q *sqlc.Select_query){
+func (j Explicit_joins) apply(q *sqlc.Select_query){
 	for _, join := range j {
 		switch join.Type {
 		case Join_left:
