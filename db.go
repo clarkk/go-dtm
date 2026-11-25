@@ -137,7 +137,11 @@ func (s DB_query) Match_etag(id uint64, etag_header uint32, where *sqlc.Where_cl
 	
 	var etag uint32
 	empty, err := s.tx.Query_row(q, []any{&etag})
-	if empty || err != nil {
+	if empty {
+		err = nil
+		return
+	}
+	if err != nil {
 		return
 	}
 	
@@ -156,14 +160,14 @@ func (s DB_query) Constraints(wheres []*sqlc.Where_clause, joins Joins) (exists 
 	return
 }
 
-func (s DB_query) Exists_id(id uint64, where *sqlc.Where_clause, joins Joins) (bool, error){
+func (s DB_query) Exists_id(id uint64, where *sqlc.Where_clause, joins Joins) (exists bool, err error){
 	q := sqlc.Select_id(s.Resource(), id).
 		Optimize_joins()
 	joins.apply(q)
 	return s.existence(q, where)
 }
 
-func (s DB_query) Exists_id_read_lock(id uint64, where *sqlc.Where_clause, joins Joins) (bool, error){
+func (s DB_query) Exists_id_lock_for_update(id uint64, where *sqlc.Where_clause, joins Joins) (exists bool, err error){
 	q := sqlc.Select_id(s.Resource(), id).
 		Lock_for_update().
 		Optimize_joins()
@@ -171,7 +175,7 @@ func (s DB_query) Exists_id_read_lock(id uint64, where *sqlc.Where_clause, joins
 	return s.existence(q, where)
 }
 
-func (s DB_query) Exists(where *sqlc.Where_clause, joins Joins) (bool, error){
+func (s DB_query) Exists(where *sqlc.Where_clause, joins Joins) (exists bool, err error){
 	q := sqlc.Select(s.Resource()).
 		Optimize_joins()
 	joins.apply(q)
@@ -179,30 +183,11 @@ func (s DB_query) Exists(where *sqlc.Where_clause, joins Joins) (bool, error){
 }
 
 func (s DB_query) Get_id_exists(where *sqlc.Where_clause) (id uint64, err error){
-	q := s.Select_query([]string{"id"}, nil).
-		Where(where).
-		Limit(0, 1)
-	
-	var empty bool
-	empty, err = s.tx.Query_row(q, []any{&id})
-	if empty {
-		err = nil
-	}
-	return
+	return s.get_id_exists(where, false)
 }
 
-func (s DB_query) Get_id_exists_read_lock(where *sqlc.Where_clause) (id uint64, err error){
-	q := s.Select_query([]string{"id"}, nil).
-		Where(where).
-		Limit(0, 1).
-		Lock_for_update()
-	
-	var empty bool
-	empty, err = s.tx.Query_row(q, []any{&id})
-	if empty {
-		err = nil
-	}
-	return
+func (s DB_query) Get_id_exists_lock_for_update(where *sqlc.Where_clause) (id uint64, err error){
+	return s.get_id_exists(where, true)
 }
 
 func (s DB_query) Get_id_exists_omit(where *sqlc.Where_clause, omit_id uint64) (id uint64, err error){
@@ -212,7 +197,7 @@ func (s DB_query) Get_id_exists_omit(where *sqlc.Where_clause, omit_id uint64) (
 	return s.Get_id_exists(where)
 }
 
-func (s DB_query) Update_limit_count(limit *api.Limit, where *sqlc.Where_clause) (bool, error){
+func (s DB_query) Update_limit_count(limit *api.Limit, where *sqlc.Where_clause) (out_of_range bool, err error){
 	count, err := s.count(where)
 	if err != nil {
 		return false, err
@@ -220,11 +205,11 @@ func (s DB_query) Update_limit_count(limit *api.Limit, where *sqlc.Where_clause)
 	return !limit.Count(count), nil
 }
 
-func (s DB_query) Get_ids(where *sqlc.Where_clause, read_lock bool) ([]uint64, error){
+func (s DB_query) Get_ids(where *sqlc.Where_clause, lock_for_update bool) ([]uint64, error){
 	query := s.Select_query([]string{"id"}, nil).
 		Where(where)
 	
-	if read_lock {
+	if lock_for_update {
 		query.Lock_for_update()
 	}
 	
@@ -238,6 +223,22 @@ func (s DB_query) Get_ids(where *sqlc.Where_clause, read_lock bool) ([]uint64, e
 		return nil
 	})
 	return entries, err
+}
+
+func (s DB_query) get_id_exists(where *sqlc.Where_clause, lock_for_update bool) (id uint64, err error){
+	q := s.Select_query([]string{"id"}, nil).
+		Where(where).
+		Limit(0, 1)
+
+	if lock_for_update {
+		q.Lock_for_update()
+	}
+
+	empty, err := s.tx.Query_row(q, []any{&id})
+	if empty {
+		err = nil
+	}
+	return
 }
 
 func (s DB_query) existence(q *sqlc.Select_query, where *sqlc.Where_clause) (exist bool, err error){
@@ -267,7 +268,6 @@ func (s DB_query) count(where *sqlc.Where_clause) (count uint32, err error){
 }
 
 func (s DB_query) get_extension() (table string, key string){
-	table	= s.Resource()
-	key		= table+"_id"
-	return
+	tbl := s.Resource()
+	return tbl+"_"+s.table_extension, tbl+"_id"
 }
