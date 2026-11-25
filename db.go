@@ -23,14 +23,14 @@ func (s DB_query) Select_query_id(id uint64, fields []string, joins Joins) *sqlc
 	q := sqlc.Select_id(s.Resource(), id).
 		Select(fields).
 		Optimize_joins()
-	apply_joins(q, joins)
+	joins.apply(q)
 	return q
 }
 
 func (s DB_query) Select_query_id_raw(id uint64, fields []string, joins Raw_joins) *sqlc.Select_query {
 	q := sqlc.Select_id(s.Resource(), id).
 		Select(fields)
-	apply_raw_joins(q, joins)
+	joins.apply(q)
 	return q
 }
 
@@ -46,14 +46,14 @@ func (s DB_query) Select_query_table(table string, fields []string, joins Joins)
 	q := sqlc.Select(table).
 		Select(fields).
 		Optimize_joins()
-	apply_joins(q, joins)
+	joins.apply(q)
 	return q
 }
 
 func (s DB_query) Select_query_table_raw(table string, fields []string, joins Raw_joins) *sqlc.Select_query {
 	q := sqlc.Select(table).
 		Select(fields)
-	apply_raw_joins(q, joins)
+	joins.apply(q)
 	return q
 }
 
@@ -159,7 +159,7 @@ func (s DB_query) Constraints(wheres []*sqlc.Where_clause, joins Joins) (bool, e
 func (s DB_query) Exists_id(id uint64, where *sqlc.Where_clause, joins Joins) (bool, error){
 	q := sqlc.Select_id(s.Resource(), id).
 		Optimize_joins()
-	apply_joins(q, joins)
+	joins.apply(q)
 	return s.existence(q, where)
 }
 
@@ -167,14 +167,14 @@ func (s DB_query) Exists_id_read_lock(id uint64, where *sqlc.Where_clause, joins
 	q := sqlc.Select_id(s.Resource(), id).
 		Lock_for_update().
 		Optimize_joins()
-	apply_joins(q, joins)
+	joins.apply(q)
 	return s.existence(q, where)
 }
 
 func (s DB_query) Exists(where *sqlc.Where_clause, joins Joins) (bool, error){
 	q := sqlc.Select(s.Resource()).
 		Optimize_joins()
-	apply_joins(q, joins)
+	joins.apply(q)
 	return s.existence(q, where)
 }
 
@@ -269,39 +269,4 @@ func (s DB_query) count(where *sqlc.Where_clause) (count uint32, err error){
 func (s DB_query) get_extension(extension string) (string, string){
 	tbl := s.Resource()
 	return tbl+"_"+extension, tbl+"_id"
-}
-
-func apply_joins(query *sqlc.Select_query, joins Joins){
-	for t, join := range joins {
-		if join.Fixed_condition {
-			switch join.Type {
-			case Join_left:
-				query.Left_join_fixed(join.Table, t, join.Field, join.Field_foreign, join.Fixed_field, join.Fixed_value)
-			case Join_inner:
-				query.Inner_join_fixed(join.Table, t, join.Field, join.Field_foreign, join.Fixed_field, join.Fixed_value)
-			}
-		} else {
-			switch join.Type {
-			case Join_left:
-				query.Left_join(join.Table, t, join.Field, join.Field_foreign)
-			case Join_inner:
-				query.Inner_join(join.Table, t, join.Field, join.Field_foreign)
-			case Join_cross:
-				query.Cross_join(join.Table, t)
-			}
-		}
-	}
-}
-
-func apply_raw_joins(query *sqlc.Select_query, joins Raw_joins){
-	for _, join := range joins {
-		switch join.Type {
-		case Join_left:
-			query.Left_join_multi(join.Table, join.Alias, join.On)
-		case Join_inner:
-			query.Inner_join_multi(join.Table, join.Alias, join.On)
-		case Join_cross:
-			query.Cross_join(join.Table, join.Alias)
-		}
-	}
 }

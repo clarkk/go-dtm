@@ -54,3 +54,38 @@ type (
 		On					sqlc.Join_conditions
 	}
 )
+
+func (j Joins) apply(q *sqlc.Select_query){
+	for alias, join := range j {
+		if join.Fixed_condition {
+			switch join.Type {
+			case Join_left:
+				q.Left_join_fixed(join.Table, alias, join.Field, join.Field_foreign, join.Fixed_field, join.Fixed_value)
+			case Join_inner:
+				q.Inner_join_fixed(join.Table, alias, join.Field, join.Field_foreign, join.Fixed_field, join.Fixed_value)
+			}
+		} else {
+			switch join.Type {
+			case Join_left:
+				q.Left_join(join.Table, alias, join.Field, join.Field_foreign)
+			case Join_inner:
+				q.Inner_join(join.Table, alias, join.Field, join.Field_foreign)
+			case Join_cross:
+				q.Cross_join(join.Table, alias)
+			}
+		}
+	}
+}
+
+func (j Raw_joins) apply(q *sqlc.Select_query){
+	for _, join := range j {
+		switch join.Type {
+		case Join_left:
+			q.Left_join_multi(join.Table, join.Alias, join.On)
+		case Join_inner:
+			q.Inner_join_multi(join.Table, join.Alias, join.On)
+		case Join_cross:
+			q.Cross_join(join.Table, join.Alias)
+		}
+	}
+}
