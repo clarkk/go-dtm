@@ -30,7 +30,7 @@ type (
 	
 	Join_type				int
 	
-	Joins map[string]Join
+	Joins					map[string]Join
 	Join struct {
 		Type				Join_type
 		Table				string
@@ -42,7 +42,7 @@ type (
 		Fixed_value			any
 	}
 	
-	Explicit_joins []Explicit_join
+	Explicit_joins			[]Explicit_join
 	Explicit_join struct {
 		Join_multi
 		Alias				string

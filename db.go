@@ -79,13 +79,13 @@ func (s DB_query) Fetch(q sqlc.SQL, scan func(rows *sql.Rows) error) error {
 	return rows.Err()
 }
 
-func (s DB_query) Insert(fields sqlc.Map) (uint64, error){
+func (s DB_query) Insert(fields sqlc.Map) (id uint64, err error){
 	return s.tx.Insert(
 		sqlc.Insert(s.Resource()).
 		Fields(fields))
 }
 
-func (s DB_query) Insert_update_duplicate(fields sqlc.Map, update_fields []string) (uint64, error){
+func (s DB_query) Insert_update_duplicate(fields sqlc.Map, update_fields []string) (id uint64, err error){
 	return s.tx.Insert(
 		sqlc.Insert(s.Resource()).
 		Fields(fields).
@@ -93,7 +93,7 @@ func (s DB_query) Insert_update_duplicate(fields sqlc.Map, update_fields []strin
 }
 
 func (s DB_query) Insert_extension(value any, fields sqlc.Map) error {
-	table, key := s.get_extension(s.table_extension)
+	table, key := s.get_extension()
 	fields[key] = value
 	return s.tx.Insert_no_return(
 		sqlc.Insert(table).
@@ -113,7 +113,7 @@ func (s DB_query) Update(fields sqlc.Map, where *sqlc.Where_clause) error {
 }
 
 func (s DB_query) Update_extension(value any, fields sqlc.Map, where *sqlc.Where_clause) error {
-	table, key := s.get_extension(s.table_extension)
+	table, key := s.get_extension()
 	return s.tx.Update(
 		sqlc.Update(table).Fields(fields).
 		Where(where.Eq(key, value)))
@@ -266,7 +266,7 @@ func (s DB_query) count(where *sqlc.Where_clause) (count uint32, err error){
 	return
 }
 
-func (s DB_query) get_extension(extension string) (string, string){
-	tbl := s.Resource()
-	return tbl+"_"+extension, tbl+"_id"
+func (s DB_query) get_extension() (table string, id string){
+	table := s.Resource()
+	return table+"_"+s.table_extension, table+"_id"
 }
