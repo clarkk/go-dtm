@@ -9,7 +9,7 @@ type (
 		unsets 		Enum_unsets
 	}
 	
-	Enum_unsets map[string]Enum_unset
+	Enum_unsets		map[string]Enum_unset
 	Enum_unset struct {
 		In 			bool
 		Values 		[]string
@@ -24,23 +24,16 @@ func NewEnum(values []string, unsets Enum_unsets) Enum {
 }
 
 func (m Enums) Enum_values(field string) []string {
-	enum, ok := m[field]
-	if !ok {
-		return nil
-	}
-	return enum.Values()
+	return m[field].Values()
 }
 
 func (m Enums) Enum_unsets(field string) Enum_unsets {
-	enum, ok := m[field]
-	if !ok {
+	unsets := m[field].unsets
+	if unsets == nil {
 		return nil
 	}
-	if enum.unsets == nil {
-        return nil
-    }
-	copy := make(Enum_unsets, len(enum.unsets))
-	for field, rule := range enum.unsets {
+	copy := make(Enum_unsets, len(unsets))
+	for field, rule := range unsets {
 		copy[field] = Enum_unset{
 			In:		rule.In,
 			Values:	slices.Clone(rule.Values),

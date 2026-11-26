@@ -31,11 +31,7 @@ func (m schema_base) Enum(field string) Enum {
 }
 
 func (m schema_base) Enum_values(field string) []string {
-	enum, ok := m.enums[field]
-	if !ok {
-		return nil
-	}
-	return enum.Values()
+	return m.enums.Enum_values(field)
 }
 
 func (m schema_base) Enums() Enums {

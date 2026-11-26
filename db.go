@@ -138,16 +138,12 @@ func (s DB_query) Match_etag(id uint64, etag_header uint32, where *sqlc.Where_cl
 	var etag uint32
 	empty, err := s.tx.Query_row(q, []any{&etag})
 	if empty {
-		err = nil
-		return
+		return false, false, nil
 	}
 	if err != nil {
-		return
+		return false, false, err
 	}
-	
-	found = true
-	match = etag_header == etag
-	return
+	return true, etag_header == etag, nil
 }
 
 func (s DB_query) Constraints(wheres []*sqlc.Where_clause, joins Joins) (exists bool, err error){
