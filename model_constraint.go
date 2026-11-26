@@ -12,9 +12,9 @@ type (
 	}
 	
 	constraint struct {
-		fn		exists_func
-		id		uint64
-		error	string
+		fn			exists_func
+		id			uint64
+		error_key	string
 	}
 )
 
@@ -34,7 +34,7 @@ func (c *Constraints) Exec(m env_lang_error) error {
 			return err
 		}
 		if used {
-			return NewError(http.StatusBadRequest, m.Env_lang_error(constraint.error, nil))
+			return NewError(http.StatusBadRequest, m.Env_lang_error(constraint.error_key, nil))
 		}
 	}
 	return nil
