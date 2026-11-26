@@ -2,10 +2,12 @@ package dtm
 
 import (
 	"net"
+	"time"
 	"context"
 	"regexp"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 	"github.com/clarkk/go-api/errin"
 	"github.com/clarkk/go-dbd"
 	"github.com/clarkk/go-dtm/types"
@@ -20,7 +22,7 @@ var (
 	re_alphanum_hyphen 	= regexp.MustCompile(`(?i)^[a-z\d-]+$`)
 	re_alphanum_chars 	= regexp.MustCompile(`(?i)^[a-z\d_.-]+$`)
 	
-	re_email_user 		= regexp.MustCompile(`(?i)^[a-z\d+_.-]+$`)
+	re_email_user 		= regexp.MustCompile(`(?i)^[a-z\d+_-]+(?:\.[a-z\d+_-]+)*$`)
 	re_email_domain 	= regexp.MustCompile(`^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z]{2,}$`)
 )
 
@@ -67,11 +69,19 @@ func (m *Validate) Field_code_letters(field string, s *string) *errin.Lang {
 func (m *Validate) Field_table_maxlength(table, field string, s *string, allow_newlines bool){
 	m.Normalize_ptr(s, allow_newlines)
 	length := dbd.Schema(table, field).Length()
-	v := []rune(*s)
-	if length >= len(v) {
+	
+	if len(*s) <= length {
 		return
 	}
-	*s = string(v[:length])
+	
+	var n int
+	for i := range *s {
+		if n == length {
+			*s = (*s)[:i]
+			return
+		}
+		n++
+	}
 }
 
 func (m *Validate) Error_empty(field string, s *string) *errin.Lang {
@@ -89,7 +99,8 @@ func (m *Validate) Error_maxlength(field string, s *string) *errin.Lang {
 
 func (m *Validate) Error_table_maxlength(table, field string, s *string) *errin.Lang {
 	length := dbd.Schema(table, field).Length()
-	if len([]rune(*s)) > length {
+	
+	if len(*s) > length && utf8.RuneCountInString(*s) > length {
 		return &errin.Lang{"FIELD_MAXLENGTH", errin.Rep{
 			"field":	m.Env_lang_field(field),
 			"length":	length,
@@ -122,10 +133,7 @@ func (m *Validate) Error_code_letters(field string, s *string) *errin.Lang {
 	if err = m.Error_empty(field, s); err != nil {
 		return err
 	}
-	if err = m.Error_maxlength(field, s); err != nil {
-		return err
-	}
-	return nil
+	return m.Error_maxlength(field, s)
 }
 
 func (m *Validate) Error_code_hyphen(field string, s *string) *errin.Lang {
@@ -139,7 +147,7 @@ func (m *Validate) Error_code_hyphen(field string, s *string) *errin.Lang {
 	if !re_alphanum_hyphen.MatchString(*s) {
 		return &errin.Lang{"FIELD_ALPHA_NUM_CHARS", errin.Rep{
 			"field":	m.Env_lang_field(field),
-			"chars":	strings.Join([]string{"-"}, ""),
+			"chars":	"-",
 		}}
 	}
 	return nil
@@ -156,7 +164,7 @@ func (m *Validate) Error_code_chars(field string, s *string) *errin.Lang {
 	if !re_alphanum_chars.MatchString(*s) {
 		return &errin.Lang{"FIELD_ALPHA_NUM_CHARS", errin.Rep{
 			"field":	m.Env_lang_field(field),
-			"chars":	strings.Join([]string{".","-","_"}, ""),
+			"chars":	".-_",
 		}}
 	}
 	return nil
@@ -171,18 +179,11 @@ func (m *Validate) Error_table_string(table, field string, s *string) *errin.Lan
 	if err := m.Error_empty(field, s); err != nil {
 		return err
 	}
-	if err := m.Error_table_maxlength(table, field, s); err != nil {
-		return err
-	}
-	return nil
+	return m.Error_table_maxlength(table, field, s)
 }
 
 func (m *Validate) Error_string_optional(field string, s *string) *errin.Lang {
-	m.Normalize_ptr(s, false)
-	if err := m.Error_maxlength(field, s); err != nil {
-		return err
-	}
-	return nil
+	return m.Error_table_string_optional(m.Resource(), field, s)
 }
 
 func (m *Validate) Error_digits(field string, s *string) *errin.Lang {
@@ -203,18 +204,12 @@ func (m *Validate) Error_digits(field string, s *string) *errin.Lang {
 
 func (m *Validate) Error_table_string_optional(table, field string, s *string) *errin.Lang {
 	m.Normalize_ptr(s, false)
-	if err := m.Error_table_maxlength(table, field, s); err != nil {
-		return err
-	}
-	return nil
+	return m.Error_table_maxlength(table, field, s)
 }
 
 func (m *Validate) Error_text_optional(field string, s *string) *errin.Lang {
 	m.Normalize_ptr(s, true)
-	if err := m.Error_maxlength(field, s); err != nil {
-		return err
-	}
-	return nil
+	return m.Error_maxlength(field, s)
 }
 
 func (m *Validate) Error_string_duplicate(field string, s *string, omit_id uint64, fn exists_string_func) (string, *errin.Lang, error){
@@ -324,18 +319,6 @@ func (m *Validate) Error_decimal(field string, s *dtp.Decimal, min, max, factor 
 	return i, nil
 }
 
-func (m *Validate) decimal_range_error(field string, min, max, factor int64) *errin.Lang {
-	var low, high dtp.Decimal
-	low.From_int64(min, factor)
-	high.From_int64(max, factor)
-	
-	return &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
-		"field":	m.Env_lang_field(field),
-		"min":		string(low),
-		"max":		string(high),
-	}}
-}
-
 func (m *Validate) Error_email(field string, s *string) (*errin.Lang, error){
 	return m.Error_table_email(m.Resource(), field, s)
 }
@@ -364,21 +347,24 @@ func (m *Validate) Error_table_email(table, field string, s *string) (*errin.Lan
 			"email":	*s,
 		}}, nil
 	}
+	
 	key := "DNS-MX:"+domain
-	ctx := context.Background()
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+	
 	_, not_found, err := rdb.Get(ctx, key)
-	if err != nil {
-		if not_found {
-			if mx, _ := net.LookupMX(domain); len(mx) == 0 {
-				return &errin.Lang{"FIELD_EMAIL_DNSMX", errin.Rep{
-					"email":	*s,
-					"domain":	domain,
-				}}, nil
-			}
-			rdb.Set(ctx, key, "1", 60*60*24*30)
-		} else {
-			return nil, err
+	if err != nil && !not_found {
+		return nil, err
+	}
+	if not_found {
+		if mx, _ := net.DefaultResolver.LookupMX(ctx, domain); len(mx) == 0 {
+			return &errin.Lang{"FIELD_EMAIL_DNSMX", errin.Rep{
+				"email":	*s,
+				"domain":	domain,
+			}}, nil
 		}
+		rdb.Set(ctx, key, "1", 60*60*24*30)
 	}
 	*s = user+"@"+domain
 	return nil, nil
@@ -413,6 +399,18 @@ func (m *Validate) Error_password_confirm(field string, pass, pass_confirm *stri
 		return "", nil, err
 	}
 	return s, nil, nil
+}
+
+func (m *Validate) decimal_range_error(field string, min, max, factor int64) *errin.Lang {
+	var low, high dtp.Decimal
+	low.From_int64(min, factor)
+	high.From_int64(max, factor)
+	
+	return &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
+		"field":	m.Env_lang_field(field),
+		"min":		string(low),
+		"max":		string(high),
+	}}
 }
 
 func is_digits(s string) bool {
