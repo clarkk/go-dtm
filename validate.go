@@ -269,7 +269,7 @@ func (m *Validate) Error_enum(field string, s *string, options []string) (int, *
 		}
 	}
 	//	Remove first value if empty string
-	if options[0] == "" {
+	if len(options) > 0 && options[0] == "" {
 		options = options[1:]
 	}
 	return 0, &errin.Lang{"FIELD_ENUM", errin.Rep{
@@ -308,28 +308,32 @@ func (m *Validate) Error_int64_range(field string, i, min, max, factor int64, al
 		}}
 	}
 	if i < min || i > max {
-		return &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
-			"field":	m.Env_lang_field(field),
-			"min":		float64(min) / float64(factor),
-			"max":		float64(max) / float64(factor),
-		}}
+		return m.decimal_range_error(field, min, max, factor)
 	}
 	return nil
 }
 
-func (m *Validate) Error_decimal(field string, s *dtp.Decimal, min, max, factor float64, allow_empty bool) (int64, *errin.Lang){
+func (m *Validate) Error_decimal(field string, s *dtp.Decimal, min, max, factor int64, allow_empty bool) (int64, *errin.Lang){
 	i, err_fatal := s.Int64(factor)
 	if err_fatal != nil {
-		return 0, &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
-			"field":	m.Env_lang_field(field),
-			"min":		min / factor,
-			"max":		max / factor,
-		}}
+		return 0, m.decimal_range_error(field, min, max, factor)
 	}
-	if err := m.Error_int64_range(field, i, int64(min), int64(max), int64(factor), allow_empty); err != nil {
+	if err := m.Error_int64_range(field, i, min, max, factor, allow_empty); err != nil {
 		return 0, err
 	}
 	return i, nil
+}
+
+func (m *Validate) decimal_range_error(field string, min, max, factor int64) *errin.Lang {
+	var low, high dtp.Decimal
+	low.From_int64(min, factor)
+	high.From_int64(max, factor)
+	
+	return &errin.Lang{"FIELD_NUMBER_RANGE", errin.Rep{
+		"field":	m.Env_lang_field(field),
+		"min":		string(low),
+		"max":		string(high),
+	}}
 }
 
 func (m *Validate) Error_email(field string, s *string) (*errin.Lang, error){
