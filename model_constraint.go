@@ -29,11 +29,11 @@ func (c *Constraints) Add(fn exists_func, id uint64, error_key string) *Constrai
 
 func (c *Constraints) Exec(m env_lang_error) error {
 	for _, constraint := range c.constraints {
-		used, err := constraint.fn(constraint.id)
+		exists, err := constraint.fn(constraint.id)
 		if err != nil {
 			return err
 		}
-		if used {
+		if exists {
 			return NewError(http.StatusBadRequest, m.Env_lang_error(constraint.error_key, nil))
 		}
 	}
