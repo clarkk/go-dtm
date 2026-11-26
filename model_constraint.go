@@ -12,7 +12,7 @@ type (
 	}
 	
 	constraint struct {
-		fn		action_id_func
+		fn		exists_func
 		id		uint64
 		error	string
 	}
@@ -22,8 +22,8 @@ func NewConstraints() *Constraints {
 	return &Constraints{}
 }
 
-func (c *Constraints) Add(fn action_id_func, id uint64, error string) *Constraints {
-	c.constraints = append(c.constraints, constraint{fn, id, error})
+func (c *Constraints) Add(fn exists_func, id uint64, error_key string) *Constraints {
+	c.constraints = append(c.constraints, constraint{fn, id, error_key})
 	return c
 }
 

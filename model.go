@@ -30,6 +30,9 @@ type (
 		endpoint		string
 		names 			Names
 	}
+
+	exists_func			func(id uint64) (exists bool, err error)
+	delete_func			func(id uint64) (empty bool, err error)
 )
 
 //	Check if two pointers are equal (have the same value or nil)
@@ -67,7 +70,7 @@ func (m *Model_table) Update_limit_max(limit *api.Limit) error {
 	return nil
 }
 
-func (m *Model_table) Update_exists(fn func(id uint64) (exists bool, err error), id uint64) error {
+func (m *Model_table) Update_exists(fn exists_func, id uint64) error {
 	exists, err := fn(id)
 	if err != nil {
 		return err
@@ -78,7 +81,7 @@ func (m *Model_table) Update_exists(fn func(id uint64) (exists bool, err error),
 	return nil
 }
 
-func (m *Model_table) Delete_exists(fn func(id uint64) (empty bool, err error), id uint64) error {
+func (m *Model_table) Delete_exists(fn delete_func, id uint64) error {
 	empty, err := fn(id)
 	if empty {
 		return ErrNotFound
