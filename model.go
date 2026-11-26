@@ -17,11 +17,11 @@ type (
 	}
 	
 	Env_context struct {
-		tx 			*dbd.Tx
-		env 		*env.Environment
+		tx 				*dbd.Tx
+		env 			*env.Environment
 	}
 	
-	Names 			map[string]string
+	Names 				map[string]string
 	
 	model_base struct {
 		Env_context
@@ -30,8 +30,6 @@ type (
 		endpoint		string
 		names 			Names
 	}
-	
-	action_id_func 	func(id uint64) (bool, error)
 )
 
 //	Check if two pointers are equal (have the same value or nil)
@@ -69,7 +67,7 @@ func (m *Model_table) Update_limit_max(limit *api.Limit) error {
 	return nil
 }
 
-func (m *Model_table) Update_exists(fn action_id_func, id uint64) error {
+func (m *Model_table) Update_exists(fn func(id uint64) (exists bool, err error), id uint64) error {
 	exists, err := fn(id)
 	if err != nil {
 		return err
@@ -80,7 +78,7 @@ func (m *Model_table) Update_exists(fn action_id_func, id uint64) error {
 	return nil
 }
 
-func (m *Model_table) Delete_exists(fn action_id_func, id uint64) error {
+func (m *Model_table) Delete_exists(fn func(id uint64) (empty bool, err error), id uint64) error {
 	empty, err := fn(id)
 	if empty {
 		return ErrNotFound
@@ -140,7 +138,7 @@ func (m *model_base) Env_lang_error(key string, replace map[string]any) error {
 }
 
 func (m *model_base) env_access() bool {
-	env_access := m.Env_access()
+	env_access := m.schema.env_access
 	if env_access == nil {
 		return false
 	}
